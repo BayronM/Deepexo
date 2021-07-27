@@ -11,7 +11,7 @@ def local_normal(data):
         local_min = np.min(imgs)
         new_imgs = (imgs - local_min) / np.max(imgs - local_min)
         new_imgs_list.append(new_imgs)
-    return np.array(new_imgs_list).reshape(-1, 64, 64)
+    return np.array(new_imgs_list)
 
 def crop_center(img,cropx,cropy):
     y,x = img.shape

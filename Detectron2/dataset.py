@@ -30,23 +30,23 @@ def create_segmentation(px,py,size):
 def get_exo_dict(data,position):
 
     dataset_dicts = []
-    for idx in range(0,len(data)-1):
+    for idx in range(0,len(data)):
         record = {}
         height,width = data[idx].shape[0],data[idx].shape[1]
-        record["filename"] = 'image_'+str(idx)
+        record["file"] = data[idx]
         record["image_id"] = idx
         record["height"] = height
         record["width"] = width
         objs = []
+        #print(data[idx].shape)
         for planet in position[idx]:
             #poly = create_segmentation(planet[0],planet[1])
             #poly = [p for x in poly for p in x]
             obj = {
-                "bbox" : [planet[0]-4,planet[1]-3,planet[0]+4,planet[1]+3],
-                "bbox_mode" : BoxMode.XYWH_ABS,
-                #"segmentation": [poly],
+                "bbox" : [planet[0]-5,planet[1]-6,planet[0]+4,planet[1]+3],
+                "bbox_mode" : BoxMode.XYXY_ABS,
+                "segmentation": [[planet[0]-5,planet[1]+3,planet[0]-5,planet[1]-5,planet[0]+3,planet[1]-5,planet[0]+3,planet[1]+3],
                 "category_id":0,
-                "center": (planet[0],planet[1])
             }
             objs.append(obj)
         record["annotations"] = objs
@@ -62,9 +62,11 @@ def get_exo_dict(data,position):
 
 def show_random_example(data,dataset_dicts,metadata,n_examples):
     for d in random.sample(dataset_dicts,n_examples):
-        a = np.tile(data[d["image_id"]],3)
+        a = data[d["image_id"]]
         visualizer = Visualizer((a*255).astype(np.uint8),metadata)
+        #out = visualizer.draw_dataset_dict(d)
         for planet in d["annotations"]:
-            out = visualizer.draw_box(planet["bbox"])
+            out = visualizer.draw_polygon(planet["segmentation"],color='g')
+            out = visualizer.draw_box(planet["bbox"],edge_color='r')
         plt.imshow(out.get_image(),cmap='RdBu_r')
         plt.show()
