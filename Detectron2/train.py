@@ -25,21 +25,22 @@ import matplotlib.pyplot as plt
 TRAIN_IMAGES_DIR = "../data/CNN/master_training.npy"
 PSF_IMAGES = "../data/CNN/tinyPSF.npy"
 TEST_IMAGES_DIR = "../data/CNN/master_test.npy"
-C_RATIO = [1,2]
+C_RATIO = [0.05,0.1]
 NAME_DATASET_TRAIN = "ExoDataset_train"
 NAME_DATASET_TEST = "ExoDataset_test"
 
 
 #Train Configuration
 cfg = get_cfg()
-cfg.merge_from_file(model_zoo.get_config_file("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml"))
+#cfg.merge_from_file(model_zoo.get_config_file("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml"))
 cfg.DATASETS.TRAIN = (NAME_DATASET_TRAIN,)
 cfg.DATASETS.TEST = ()
 cfg.DATALOADER.NUM_WORKERS = 2
-cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml")  # Let training initialize from model zoo
+#cfg.MODEL.DEVICE='cpu'
+#cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml")  # Let training initialize from model zoo
 cfg.SOLVER.IMS_PER_BATCH = 32
 cfg.SOLVER.BASE_LR = 0.0001  # pick a good LR
-cfg.SOLVER.MAX_ITER = 1000   # 300 iterations seems good enough for this toy dataset; you will need to train longer for a practical dataset
+cfg.SOLVER.MAX_ITER = 100 # 300 iterations seems good enough for this toy dataset; you will need to train longer for a practical dataset
 cfg.SOLVER.STEPS = []        # do not decay learning rate
 cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 32   # faster, and good enough for this toy dataset (default: 512)
 cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1  # only has one class (ballon). (see https://detectron2.readthedocs.io/tutorials/datasets.html#update-the-config-for-new-datasets)
@@ -49,13 +50,17 @@ predictor = DefaultPredictor(cfg)
 #------------------------------------------------
 
 
-def mapper(dataset_dict):
+def custom_mapper(dataset_dict):
     dataset_dict = copy.deepcopy(dataset_dict)
     image = np.float32(np.moveaxis(dataset_dict['file'],-1,0))
+    #plt.imshow(image)
+    #plt.show()
     image = torch.from_numpy(image)
     annos = []
     for annotation in dataset_dict.pop("annotations"):
         annos.append(annotation)
+    instances = utils.annotations_to_instances(annos, image)
+    #print(instances)
 
     return{
         "image" : image,
@@ -76,10 +81,10 @@ class Trainer(DefaultTrainer):
         #    )
     @classmethod
     def build_train_loader(cls,cfg):
-        return build_detection_train_loader(cfg,mapper=mapper)
+        return build_detection_train_loader(cfg,mapper=custom_mapper)
     @classmethod
     def build_test_loader(cls,cfg,dataset_name):
-        return build_detection_test_loader(cfg,dataset_name,mapper=mapper)
+        return build_detection_test_loader(cfg,dataset_name,mapper=custom_mapper)
 
 
 
@@ -112,21 +117,23 @@ def main():
     dataset_train_dict = get_exo_dict(data_train,position_train)
     dataset_test_dict = get_exo_dict(data_test,position_test)
     show_random_example(data_train,dataset_train_dict,exo_metadata_train,3)
-
+    #a = custom_mapper(dataset_train_dict.pop())
+    #print(a)
 
     #os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
-    #trainer = Trainer(cfg)
-    #trainer.resume_or_load(resume=False)
-    #trainer.train()
+    trainer = Trainer(cfg)
+    trainer.resume_or_load(resume=False)
+    trainer.train()
 
-    #for d in random.sample(dataset_test_dict,5):
-    #    im = d["file"]
-    #    outputs = predictor(im)
-    #    print(outputs)
-    #    v = Visualizer((im*255).astype(np.uint8),metadata=exo_metadata_test)
-    #    out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
-    #    plt.imshow(out.get_image())
-    #    plt.show()
+    for d in random.sample(dataset_test_dict,5):
+        im = d["file"]
+        outputs = predictor(im)
+        print(outputs)
+        v = Visualizer((im*255).astype(np.uint8),metadata=exo_metadata_train,scale=10.0)
+        out=v.draw_instance_predictions(outputs["instances"].to("cpu"))
+        print(out.get_image().shape)
+        plt.imshow(out.get_image())
+        plt.show()
 
 
 if __name__ == "__main__":

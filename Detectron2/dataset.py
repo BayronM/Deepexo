@@ -40,12 +40,12 @@ def get_exo_dict(data,position):
         objs = []
         #print(data[idx].shape)
         for planet in position[idx]:
-            #poly = create_segmentation(planet[0],planet[1])
-            #poly = [p for x in poly for p in x]
+            poly = [planet[0]-4,planet[1]+3,planet[0]-4,planet[1]-4,planet[0]+3,planet[1]-4,planet[0]+3,planet[1]+3]
+            box = [np.min(poly[::2])-2,np.min(poly[1::2])-2,np.max(poly[::2])+2,np.max(poly[1::2])+2]
             obj = {
-                "bbox" : [planet[0]-5,planet[1]-6,planet[0]+4,planet[1]+3],
+                "bbox" : box,
                 "bbox_mode" : BoxMode.XYXY_ABS,
-                "segmentation": [[planet[0]-5,planet[1]+3,planet[0]-5,planet[1]-5,planet[0]+3,planet[1]-5,planet[0]+3,planet[1]+3],
+                "segmentation": [poly],
                 "category_id":0,
             }
             objs.append(obj)
@@ -57,16 +57,17 @@ def get_exo_dict(data,position):
 
 
 
+
 #dataset_dicts = get_exo_dict(preprocessed_data,position)
 
 
 def show_random_example(data,dataset_dicts,metadata,n_examples):
     for d in random.sample(dataset_dicts,n_examples):
         a = data[d["image_id"]]
-        visualizer = Visualizer((a*255).astype(np.uint8),metadata)
-        #out = visualizer.draw_dataset_dict(d)
-        for planet in d["annotations"]:
-            out = visualizer.draw_polygon(planet["segmentation"],color='g')
-            out = visualizer.draw_box(planet["bbox"],edge_color='r')
+        visualizer = Visualizer((a*255).astype(np.uint8),metadata,scale=10.0)
+        out = visualizer.draw_dataset_dict(d)
+        #for planet in d["annotations"]:
+        #    out = visualizer.draw_polygon(planet["segmentation"],color='g')
+            #out = visualizer.draw_box(planet["bbox"],edge_color='r')
         plt.imshow(out.get_image(),cmap='RdBu_r')
         plt.show()
