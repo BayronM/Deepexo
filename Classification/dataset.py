@@ -123,3 +123,19 @@ transforms = transforms.Compose([
     transforms.RandomVerticalFlip(),
     transforms.RandomRotation(np.random.randint(0,359))
     ])
+
+class ExoDatasetMask(Dataset):
+    def __init__(self,files,labels,masks, transforms=None):
+        self.files = files
+        self.labels = labels
+        self.masks = masks
+        self.transforms = transforms
+
+    def __len__(self):
+        return len(self.files)
+
+    def __getitem__(self,index):
+        image =np.float32(np.moveaxis(self.files[index],-1,0))
+        if self.transforms:
+            image = self.transforms(image)
+        return image,int(self.labels[index]),self.masks[index]
