@@ -181,7 +181,12 @@ def show_CAM(dataloader, model, n_examples, classes,loc = False):
     n_examples : number of examples to show (need to be <= batch_size)
     """
     for i in range(n_examples):
+<<<<<<< HEAD
         (images,labels,_) = next(iter(dataloader))
         
+=======
+        (images,labels,masks) = next(iter(dataloader))
+        plt.imshow(masks[i])
+>>>>>>> aa04b5d0fcdeefbacd866a4d855a37ca4a385911
         plt.show()
         CAM(classes,model.cpu(),images[i].cpu())

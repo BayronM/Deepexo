@@ -25,10 +25,17 @@ def returnCAM(feature_conv, weight_softmax, class_idx):
 
 def show_cam(CAMs, width, height, orig_image, class_idx, all_classes, save_name):
     for i, cam in enumerate(CAMs):
+<<<<<<< HEAD
         heatmap = cv2.applyColorMap(cv2.resize(cam,(width, height)),cv2.COLORMAP_JET)
         img =  np.tile(255 *orig_image[0][:,:,np.newaxis],3).astype(np.uint8)
         result = heatmap
         plt.imshow(heatmap,cmap='RdBu_r')
+=======
+        heatmap = cv2.bitwise_not(cv2.resize(cam,(width, height)))
+        img =  np.tile(255 *orig_image[0][:,:,np.newaxis],3).astype(np.uint8)
+        result = heatmap
+        plt.imshow(heatmap)
+>>>>>>> aa04b5d0fcdeefbacd866a4d855a37ca4a385911
         plt.show()
         plt.imshow(img)
         plt.show()

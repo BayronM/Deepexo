@@ -28,8 +28,13 @@ IMAGE_HEIGHT = 64
 IMAGE_WIDTH = 64
 BATCH_SIZE = 32
 C_RATIO = [0.1,0.1]
+<<<<<<< HEAD
 MODEL = "YipNet"
 MODEL_PATH = "./model_YipNet_10_[(0.1, 0.1)].pth"
+=======
+MODEL = "NET"
+MODEL_PATH = "./model_Net_584_[(0.030521633958155707, 0.03815204244769462)].pth"
+>>>>>>> aa04b5d0fcdeefbacd866a4d855a37ca4a385911
 TRAIN_IMG_DIR = "../data/CNN/master_training.npy"
 PSF_IMG_DIR = "../data/CNN/tinyPSF.npy"
 TEST_IMG_DIR = "../data/CNN/master_test.npy"
@@ -89,7 +94,11 @@ def main():
     epoch = checkpoint['epoch']
     print(f"\n\nTrain with  {epoch} - epochs - \n\n")
 
+<<<<<<< HEAD
     #print("--------------------------------")
+=======
+    print("--------------------------------")
+>>>>>>> aa04b5d0fcdeefbacd866a4d855a37ca4a385911
     print(f"\n Test Set :\n")
     check_accuracy_m(testloader, model, loss_fn, DEVICE)
     show_CAM(testloader,model,10,classes)

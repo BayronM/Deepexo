@@ -170,4 +170,31 @@ class ExoDatasetMask(Dataset):
         image = np.float32(np.moveaxis(self.files[index], -1, 0))
         if self.transforms:
             image = self.transforms(image)
+<<<<<<< HEAD
         return image, int(self.labels[index]), self.masks[index]
+=======
+        return image,int(self.labels[index])
+
+transforms = transforms.Compose([
+    transforms.ToTensor(),
+    transforms.RandomHorizontalFlip(),
+    transforms.RandomVerticalFlip(),
+    transforms.RandomRotation(np.random.randint(0,359))
+    ])
+
+class ExoDatasetMask(Dataset):
+    def __init__(self,files,labels,masks, transforms=None):
+        self.files = files
+        self.labels = labels
+        self.masks = masks
+        self.transforms = transforms
+
+    def __len__(self):
+        return len(self.files)
+
+    def __getitem__(self,index):
+        image =np.float32(np.moveaxis(self.files[index],-1,0))
+        if self.transforms:
+            image = self.transforms(image)
+        return image,int(self.labels[index]),self.masks[index]
+>>>>>>> aa04b5d0fcdeefbacd866a4d855a37ca4a385911
