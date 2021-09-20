@@ -13,8 +13,6 @@ def returnCAM(feature_conv, weight_softmax, class_idx):
     size_upsample = (256,256 )
     bz, nc, h, w = feature_conv.shape
     output_cam = []
-    print(feature_conv.shape)
-    print(weight_softmax)
     for idx in class_idx:
         cam = weight_softmax[idx].dot(feature_conv.reshape((nc, h*w)))
         cam = cam.reshape(h, w)
@@ -27,16 +25,18 @@ def returnCAM(feature_conv, weight_softmax, class_idx):
 
 def show_cam(CAMs, width, height, orig_image, class_idx, all_classes, save_name):
     for i, cam in enumerate(CAMs):
-        heatmap = cv2.applyColorMap(cv2.resize(cam,(width, height)), cv2.COLORMAP_JET)
+        heatmap = cv2.applyColorMap(cv2.resize(cam,(width, height)),cv2.COLORMAP_JET)
         img =  np.tile(255 *orig_image[0][:,:,np.newaxis],3).astype(np.uint8)
         result = heatmap
-
+        plt.imshow(heatmap,cmap='RdBu_r')
+        plt.show()
+        plt.imshow(img)
+        plt.show()
         extent = 0,64,0,64
         fig = plt.figure(frameon=False)
-        im2 = plt.imshow(img,cmap='R',interpolation='nearest',extent=extent)
-        im1 = plt.imshow(heatmap,alpha=0.5,interpolation='bilinear',extent = extent)
-        plt.show()
-        plt.imshow(heatmap)
+        im2 = plt.imshow(img,cmap='RdBu_r',interpolation='nearest',extent=extent)
+        im1 = plt.imshow(heatmap,alpha=0.7,interpolation='bilinear',extent = extent)
+        plt.title(all_classes[class_idx])
         plt.show()
         # put class label text on the result
         #cv2.putText(result, all_classes[class_idx[i]], (20, 40),
@@ -58,20 +58,13 @@ def CAM(all_classes,model, image):
 
     def hook_feature(module, input, output):
         features_blobs.append(output.data.cpu().numpy())
-    model._modules.get('conv3_2').register_forward_hook(hook_feature)
+    model._modules.get('conv_f').register_forward_hook(hook_feature)
     params = list(model.parameters())
-    for para in params:
-        print(para.shape)
-    print(params[-2].shape)
-    weight_softmax = np.squeeze(params[-2].data.numpy())
-    #print(weight_softmax)
-    print(features_blobs)
+    weight_softmax = np.squeeze(params[-2].data.numpy())    
     outputs = model(image_batch)
 
     probs = F.softmax(outputs,dim=1).data.squeeze()
     class_idx = topk(probs,1)[1].int()
-    #print(class_idx)
-
     CAMs = returnCAM(features_blobs[0], weight_softmax, class_idx)
     # file name to save the resulting CAM image with
     save_name = "cam_0"
